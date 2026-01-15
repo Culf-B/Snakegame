@@ -1,4 +1,4 @@
-import { Table } from "@chakra-ui/react"
+import { Table } from "@chakra-ui/react";
 
 const LeaderboardTable = () => {
   return (
@@ -17,14 +17,16 @@ const LeaderboardTable = () => {
             <Table.Row key={index}>
               <Table.Cell>{index + 1}</Table.Cell>
               <Table.Cell>{item.username}</Table.Cell>
-              <Table.Cell textAlign="end" bg={"bg.info"}>{item.score}</Table.Cell>
+              <Table.Cell textAlign="end" bg={"bg.info"}>
+                {item.score}
+              </Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
       </Table.Root>
     </Table.ScrollArea>
-  )
-}
+  );
+};
 
 const items = [
   { username: "Laptop", score: 1000 },
@@ -42,5 +44,5 @@ const items = [
   { username: "i", score: 10 },
   { username: "k", score: 10 },
   { username: "a", score: 10 },
-]
+];
 export default LeaderboardTable;
