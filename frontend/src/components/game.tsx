@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { Stat, VStack, Stack, Text, Box } from "@chakra-ui/react";
+import { Stat, VStack, Stack, Text, Box, Heading } from "@chakra-ui/react";
+import { GameEndDialog, type GameEndDialogHandle } from "./gameEnd";
 
 class Level {
   ctx: CanvasRenderingContext2D;
@@ -97,6 +98,12 @@ class Level {
 
   getScore() {
     return this.player.getScore();
+  }
+
+  gameEnded() {
+    if (this.player.dead) {
+      return true;
+    }
   }
 
   cleanUp() {
@@ -321,6 +328,7 @@ const Game = () => {
   const animationRef = useRef<number | null>(null);
   const divRef = useRef<HTMLDivElement | null>(null);
   const scoreRef = useRef<HTMLElement | null>(null);
+  const gameEndRef = useRef<GameEndDialogHandle | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -334,6 +342,9 @@ const Game = () => {
 
     const scoreStat = scoreRef.current;
     if (!scoreStat) return;
+
+    const gameEndDialog = gameEndRef.current;
+    if (!gameEndDialog) return;
 
     let canvasSizeUpdated = false;
 
@@ -364,6 +375,12 @@ const Game = () => {
 
       scoreStat.innerHTML = level.getScore().toString();
 
+      if (level.gameEnded()) {
+        if (gameEndDialog.gameEnded(level.getScore())) {
+          return;
+        }
+      }
+
       // Request the next frame
       animationRef.current = requestAnimationFrame(render);
     };
@@ -390,12 +407,15 @@ const Game = () => {
           color="fg.disabled"
         >
           <VStack gap="10">
+            <Heading>Game info</Heading>
             <Text>Controls: W, A, S, D</Text>
 
             <Stat.Root>
               <Stat.Label>Score</Stat.Label>
               <Stat.ValueText ref={scoreRef}>0</Stat.ValueText>
             </Stat.Root>
+
+            <GameEndDialog ref={gameEndRef}></GameEndDialog>
           </VStack>
         </Box>
       </Box>
