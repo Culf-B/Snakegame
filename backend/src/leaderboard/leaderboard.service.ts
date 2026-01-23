@@ -1,22 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { Entry } from './entry.model';
-import { v4 as uuid } from 'uuid';
+import { Entry } from './interfaces/entry.interface';
+import { ClientEntry } from './interfaces/client-entry.interface';
 
 @Injectable()
 export class LeaderboardService {
-    private learderboard: Entry[] = [];
+  private readonly leaderboardEntries: Entry[] = [];
 
-    getLeaderboard(): Entry[] {
-        return this.learderboard;
-    }
+  create(clientEntry: ClientEntry) {
+    // TODO: Placement update
+    const entry: Entry = {
+      ...clientEntry,
+      placement: 0, // Temp
+    };
+    this.leaderboardEntries.push(entry);
+  }
 
-    createEntry(username: string, score: number): Entry {
-        const entry: Entry = {
-        id: uuid(),
-        username,
-        score
-        };
-        this.learderboard.push(entry);
-        return entry;
-    }
+  find(start: number, amount: number): Entry[] {
+    return this.leaderboardEntries;
+  }
 }
