@@ -7,6 +7,7 @@ export class LeaderboardService {
   private readonly leaderboardEntries: Entry[] = [];
 
   create(clientEntry: ClientEntry) {
+    console.log(clientEntry);
     // TODO: Placement update
     const entry: Entry = {
       ...clientEntry,

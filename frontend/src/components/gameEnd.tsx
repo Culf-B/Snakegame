@@ -8,6 +8,12 @@ import {
 } from "@chakra-ui/react";
 import React, { useImperativeHandle } from "react";
 import { useRef } from "react";
+import { postData } from "../api";
+
+class CreateEntry {
+  name!: string;
+  score!: number;
+}
 
 export interface GameEndDialogHandle {
   gameEnded: (score: number) => boolean;
@@ -19,6 +25,7 @@ export const GameEndDialog = React.forwardRef<GameEndDialogHandle, object>(
     const submitButtonRef = useRef<HTMLButtonElement | null>(null);
     const scoreLabelRef = useRef<HTMLParagraphElement | null>(null);
     const dialog = useDialog();
+    const scoreRef = useRef(0);
 
     function inputUpdate() {
       const input = inputRef.current;
@@ -37,19 +44,27 @@ export const GameEndDialog = React.forwardRef<GameEndDialogHandle, object>(
       const input = inputRef.current;
       if (!input) return;
 
-      console.log(input.value);
+      const dto = new CreateEntry();
+      dto.name = input.value;
+      dto.score = scoreRef.current;
+
+      postData("leaderboard", dto).then(() => {
+        location.reload();
+      });
     }
 
     useImperativeHandle<GameEndDialogHandle, GameEndDialogHandle>(ref, () => ({
       gameEnded: (score: number): boolean => {
         dialog.setOpen(true);
         const scoreLabel = scoreLabelRef.current;
+        scoreRef.current = score;
         // Scorelabel can be null, i think this happens because it is not fully initialized at this point,
         // due to the dialog just being opened. Right now, the game keeps its loop running until this function returns true
         // Could probably also be fixed with a small timeout between dialog.setOpen and scoreLabelRef.current.
 
         if (scoreLabel) {
           scoreLabel.innerHTML += score.toString();
+          inputUpdate();
           return true;
         } else {
           return false;
@@ -75,6 +90,15 @@ export const GameEndDialog = React.forwardRef<GameEndDialogHandle, object>(
                   <Input
                     ref={inputRef}
                     onChange={inputUpdate}
+                    onKeyUp={(e) => {
+                      if (
+                        e.key === "Enter" &&
+                        submitButtonRef.current &&
+                        !submitButtonRef.current.disabled
+                      ) {
+                        submitScore();
+                      }
+                    }}
                     placeholder="Enter username"
                   />
                   <Field.HelperText>
@@ -91,7 +115,7 @@ export const GameEndDialog = React.forwardRef<GameEndDialogHandle, object>(
                 >
                   Cancel
                 </Button>
-                <Button ref={submitButtonRef} disabled onClick={submitScore}>
+                <Button ref={submitButtonRef} onClick={submitScore}>
                   Submit score
                 </Button>
               </Dialog.Footer>
@@ -100,5 +124,5 @@ export const GameEndDialog = React.forwardRef<GameEndDialogHandle, object>(
         </Portal>
       </Dialog.RootProvider>
     );
-  }
+  },
 );

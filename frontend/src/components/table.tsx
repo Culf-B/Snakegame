@@ -1,6 +1,32 @@
+import { useEffect, useRef, useState } from "react";
 import { Table } from "@chakra-ui/react";
+import { fetchData } from "../api";
+
+interface Entry {
+  placement: number;
+  name: string;
+  score: number;
+}
 
 const LeaderboardTable = () => {
+  const [items, setItems] = useState<Entry[]>([]);
+  const mountedRef = useRef(false);
+
+  useEffect(() => {
+    const getData = async () => {
+      if (mountedRef.current) return;
+      mountedRef.current = true;
+      try {
+        const responseData = await fetchData<Entry[]>("leaderboard");
+        setItems(responseData);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    getData();
+  }, []);
+
   return (
     <Table.ScrollArea borderWidth="1px" rounded="md" maxH="75vh" margin={"5"}>
       <Table.Root stickyHeader>
@@ -13,36 +39,25 @@ const LeaderboardTable = () => {
         </Table.Header>
 
         <Table.Body textStyle="xl">
-          {items.map((item, index) => (
-            <Table.Row key={index}>
-              <Table.Cell>{index + 1}</Table.Cell>
-              <Table.Cell>{item.username}</Table.Cell>
-              <Table.Cell textAlign="end" bg={"bg.info"}>
-                {item.score}
-              </Table.Cell>
-            </Table.Row>
-          ))}
+          {items
+            .sort((a, b) => {
+              if (a.score < b.score) return 1;
+              if (a.score > b.score) return -1;
+              return 0;
+            })
+            .map((item, index) => (
+              <Table.Row key={index}>
+                <Table.Cell>{index + 1}</Table.Cell>
+                <Table.Cell>{item.name}</Table.Cell>
+                <Table.Cell textAlign="end" bg={"bg.info"}>
+                  {item.score}
+                </Table.Cell>
+              </Table.Row>
+            ))}
         </Table.Body>
       </Table.Root>
     </Table.ScrollArea>
   );
 };
 
-const items = [
-  { username: "Laptop", score: 1000 },
-  { username: "Coffee Maker", score: 150 },
-  { username: "Desk Chair", score: 50.0 },
-  { username: "Smartphone", score: 30 },
-  { username: "j", score: 10 },
-  { username: "b", score: 10 },
-  { username: "c", score: 10 },
-  { username: "d", score: 10 },
-  { username: "e", score: 10 },
-  { username: "f", score: 10 },
-  { username: "g", score: 10 },
-  { username: "h", score: 10 },
-  { username: "i", score: 10 },
-  { username: "k", score: 10 },
-  { username: "a", score: 10 },
-];
 export default LeaderboardTable;
