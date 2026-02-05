@@ -1,22 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { Entry } from './interfaces/entry.interface';
-import { ClientEntry } from './interfaces/client-entry.interface';
+import { Entry } from './leaderboard.schema';
 
 @Injectable()
 export class LeaderboardService {
   private readonly leaderboardEntries: Entry[] = [];
 
-  create(clientEntry: ClientEntry) {
-    console.log(clientEntry);
-    // TODO: Placement update
-    const entry: Entry = {
-      ...clientEntry,
-      placement: 0, // Temp
+  create(username: string, score: number) {
+    const newEntry = {
+      username,
+      score,
     };
-    this.leaderboardEntries.push(entry);
+    this.leaderboardEntries.push(newEntry);
+    return newEntry;
   }
 
-  find(start: number, amount: number): Entry[] {
+  getAll(): Entry[] {
     return this.leaderboardEntries;
   }
 }

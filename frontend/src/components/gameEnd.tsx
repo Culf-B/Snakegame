@@ -8,12 +8,33 @@ import {
 } from "@chakra-ui/react";
 import React, { useImperativeHandle } from "react";
 import { useRef } from "react";
-import { postData } from "../api";
+import { gql, type TypedDocumentNode } from "@apollo/client";
+import { useMutation } from "@apollo/client/react";
 
-class CreateEntry {
-  name!: string;
-  score!: number;
-}
+type AddScoreMutation = {
+  addScore: {
+    __typename: "Entry";
+    username: string;
+    score: number;
+  }[];
+};
+
+type AddScoreMutationVariables = {
+  username: string;
+  score: number;
+};
+
+const ADD_SCORE: TypedDocumentNode<
+  AddScoreMutation,
+  AddScoreMutationVariables
+> = gql`
+  mutation AddScore($username: String!, $score: Int!) {
+    addScore(username: $username, score: $score) {
+      username
+      score
+    }
+  }
+`;
 
 export interface GameEndDialogHandle {
   gameEnded: (score: number) => boolean;
@@ -26,6 +47,15 @@ export const GameEndDialog = React.forwardRef<GameEndDialogHandle, object>(
     const scoreLabelRef = useRef<HTMLParagraphElement | null>(null);
     const dialog = useDialog();
     const scoreRef = useRef(0);
+
+    const [addScore] = useMutation(ADD_SCORE, {
+      onCompleted: () => {
+        location.reload();
+      },
+      onError: (error) => {
+        console.error("Error adding score:", error); // Handle errors
+      },
+    });
 
     function inputUpdate() {
       const input = inputRef.current;
@@ -41,15 +71,13 @@ export const GameEndDialog = React.forwardRef<GameEndDialogHandle, object>(
     }
 
     function submitScore() {
-      const input = inputRef.current;
-      if (!input) return;
+      if (!inputRef.current) return;
 
-      const dto = new CreateEntry();
-      dto.name = input.value;
-      dto.score = scoreRef.current;
-
-      postData("leaderboard", dto).then(() => {
-        location.reload();
+      addScore({
+        variables: {
+          username: inputRef.current.value,
+          score: scoreRef.current,
+        },
       });
     }
 

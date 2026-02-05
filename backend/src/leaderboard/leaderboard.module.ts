@@ -1,9 +1,16 @@
 import { Module } from '@nestjs/common';
-import { LeaderboardController } from './leaderboard.controller';
+import { GraphQLModule } from '@nestjs/graphql';
+import { LeaderboardResolver } from './leaderboard.resolver';
 import { LeaderboardService } from './leaderboard.service';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 @Module({
-  controllers: [LeaderboardController],
-  providers: [LeaderboardService],
+  imports: [
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+    }),
+  ],
+  providers: [LeaderboardResolver, LeaderboardService],
 })
 export class LeaderboardModule {}
